@@ -12,6 +12,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var composeFilePath string
+
 type Service struct {
 	ContainerName string `yaml:"container_name,omitempty"`
 }
@@ -21,8 +23,6 @@ type DockerComposeConfig struct {
 }
 
 func runDockerCompose(dockerCommand string, excludedContainers []string) {
-	composeFilePath := "docker-compose.yaml"
-
 	fileContent, err := os.ReadFile(composeFilePath)
 	if err != nil {
 		log.Fatalf("Error reading file: %v", err)
@@ -68,11 +68,22 @@ func main() {
 		Usage:   "services to exclude",
 	}
 
+	fileFlag := &cli.StringFlag{
+		Name:        "file",
+		Aliases:     []string{"f"},
+		Usage:       "target docker compose file",
+		Value:       "docker-compose.yaml",
+		Destination: &composeFilePath,
+	}
+
 	cmd := &cli.Command{
 		Name:        "Dockexclude",
 		Usage:       "Manage your Docker Compose stack with the ability to exclude services.",
 		UsageText:   "dockexclude <command> [--exclude <service>...]",
 		Description: "Manage your Docker Compose stack with the ability to exclude services.",
+		Flags: []cli.Flag{
+			fileFlag,
+		},
 		Commands: []*cli.Command{
 			{
 				Name:      "up",
